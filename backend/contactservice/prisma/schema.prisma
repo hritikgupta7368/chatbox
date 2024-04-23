@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Contacts {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String       @db.ObjectId
+  individuals Individual[]
+  groups      Group[]
+}
+
+model Individual {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  contactsId String   @db.ObjectId
+  name       String   @unique @default("")
+  createdAt  DateTime @default(now())
+  Contacts   Contacts @relation(fields: [contactsId], references: [id], onDelete: Cascade)
+}
+
+model Group {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  name         String         @unique 
+  contactsId   String        @db.ObjectId
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  groupMembers GroupMember[]
+  Contacts     Contacts      @relation(fields: [contactsId], references: [id])
+}
+
+model GroupMember {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  name    String @unique
+  groupId String @db.ObjectId
+  Group   Group  @relation(fields: [groupId], references: [id])
+}
